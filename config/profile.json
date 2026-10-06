@@ -1,0 +1,49 @@
+{
+  "personal": {
+    "full_name": "Nachiket Rana",
+    "first_name": "Nachiket",
+    "last_name": "Rana",
+    "email": "nachiket.rana@example.com",
+    "phone": "+91 9876543210",
+    "location": "India",
+    "city": "Mumbai",
+    "linkedin": "https://linkedin.com/in/nachiket-rana",
+    "github": "https://github.com/nachiketrana",
+    "portfolio": "https://nachiketrana.dev",
+    "website": "https://nachiketrana.dev"
+  },
+  "work_authorization": {
+    "legally_authorized_in_india": "Yes",
+    "requires_sponsorship": "No",
+    "notice_period": "Immediate / 15 days"
+  },
+  "tech_profile": {
+    "title": "Full-Stack Developer",
+    "skills": ["JavaScript", "TypeScript", "React", "Node.js", "Express", "MERN Stack", "PostgreSQL", "REST APIs", "TradingView API"],
+    "experience_years": "2",
+    "key_achievements": [
+      "Optimized API response time by 30% through caching and query optimization",
+      "Built interactive financial dashboards integrated with TradingView APIs",
+      "Engineered scalable MERN stack web applications with PostgreSQL"
+    ],
+    "salary_expectation": "₹6L - ₹10L PA"
+  },
+  "social_media_profile": {
+    "title": "Social Media & Growth Specialist",
+    "skills": ["Social Media Strategy", "Content Marketing", "Brand Engagement", "Community Management", "Analytics", "Copywriting"],
+    "experience_years": "2",
+    "key_achievements": [
+      "Increased brand engagement by 40% across 3-5 client social channels",
+      "Maintained 95%+ fast customer response rate across platforms",
+      "Executed targeted organic growth strategies for tech & lifestyle brands"
+    ],
+    "salary_expectation": "₹3L - ₹5L PA"
+  },
+  "form_defaults": {
+    "how_did_you_hear": "LinkedIn",
+    "gender": "Decline to state",
+    "race_ethnicity": "Decline to state",
+    "veteran_status": "No",
+    "disability_status": "No"
+  }
+}

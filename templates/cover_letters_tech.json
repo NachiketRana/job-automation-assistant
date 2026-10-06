@@ -1,0 +1,22 @@
+{
+  "tech_templates": [
+    {
+      "id": "fullstack_performance",
+      "name": "Full-Stack & API Performance Focus",
+      "subject": "Application for Full-Stack Developer - Nachiket Rana",
+      "body": "Dear Hiring Team at {company_name},\n\nI am writing to express my enthusiastic interest in the {job_title} position. With strong expertise in full-stack development (React, Node.js, Express, PostgreSQL) and a proven track record of optimizing backend performance, I am confident in my ability to deliver immediate value to your engineering team.\n\nKey Highlights of My Experience:\n- API Performance Optimization: Enhanced backend response times by 30% through caching and query indexing.\n- Scalable Full-Stack Engineering: Developed end-to-end web applications with MERN stack and relational databases.\n- Financial & Real-Time Dashboards: Built custom data visualization tools integrated with TradingView APIs.\n\nI am particularly impressed by {company_name}'s work and would love the opportunity to discuss how my technical skills can support your product goals.\n\nBest regards,\nNachiket Rana\nEmail: {email}\nPhone: {phone}\nPortfolio: {portfolio}\nGitHub: {github}"
+    },
+    {
+      "id": "frontend_react",
+      "name": "Frontend & React Focus",
+      "subject": "Frontend / React Developer Application - Nachiket Rana",
+      "body": "Dear Hiring Team at {company_name},\n\nI am thrilled to apply for the {job_title} role. As a developer passionate about building clean, high-performing user interfaces with React, JavaScript, and modern CSS frameworks, I bring both technical rigor and design sensitivity to frontend development.\n\nIn my previous projects, I built dynamic dashboards with TradingView charts, implemented responsive UI components, and integrated REST APIs with smooth error handling and fast page loads.\n\nI look forward to discussing how I can contribute to {company_name}'s frontend applications.\n\nSincerely,\nNachiket Rana\n{portfolio} | {github}"
+    },
+    {
+      "id": "backend_node",
+      "name": "Backend & Database Focus",
+      "subject": "Backend Developer Position - Nachiket Rana",
+      "body": "Dear Hiring Manager,\n\nI am writing to submit my application for the {job_title} role at {company_name}. My core background lies in building reliable Node.js microservices, RESTful APIs, and optimizing SQL/PostgreSQL databases.\n\nNotable Achievement: Engineered backend service improvements that reduced database lookup latency and improved API response times by 30% for high-traffic endpoints.\n\nI am eager to bring this backend focus and problem-solving mindset to {company_name}.\n\nBest regards,\nNachiket Rana\nLinkedIn: {linkedin} | GitHub: {github}"
+    }
+  ]
+}

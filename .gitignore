@@ -1,0 +1,16 @@
+# Browser session data (contains cookies/session tokens)
+browser_session_data/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Environment files
+.env
+
+# Logs
+*.log

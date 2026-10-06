@@ -1,0 +1,16 @@
+{
+  "social_templates": [
+    {
+      "id": "brand_growth",
+      "name": "Brand Growth & Engagement Focus",
+      "subject": "Application for Social Media Specialist - Nachiket Rana",
+      "body": "Dear Hiring Team at {company_name},\n\nI am excited to apply for the {job_title} position. With hands-on experience managing social media accounts, driving organic audience engagement, and analyzing performance metrics, I help brands build authentic online communities.\n\nKey Achievements:\n- Increased organic brand engagement by 40% across multiple client accounts.\n- Managed content calendar, copywriting, and visual assets for 3-5 concurrent brands.\n- Achieved 95%+ response rate for audience inquiries and customer support.\n\nI admire {company_name}'s brand voice and would love to help scale your social presence and audience reach.\n\nWarm regards,\nNachiket Rana\nEmail: {email}\nPortfolio: {portfolio}"
+    },
+    {
+      "id": "content_creator",
+      "name": "Content Creator & Community Manager",
+      "subject": "Social Media & Community Manager Application - Nachiket Rana",
+      "body": "Dear Hiring Manager at {company_name},\n\nI am writing to express my strong interest in the {job_title} role. My expertise spans short-form content planning, community moderation, copywriting, and trend analysis across Instagram, LinkedIn, and Twitter/X.\n\nI specialize in crafting relatable content that resonates with modern audiences while maintaining strict brand alignment and high conversion rates.\n\nI would welcome the opportunity to discuss how I can elevate {company_name}'s social content strategy.\n\nSincerely,\nNachiket Rana\n{linkedin}"
+    }
+  ]
+}
