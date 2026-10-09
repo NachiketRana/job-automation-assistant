@@ -1,6 +1,13 @@
 import os
 import sys
 import json
+
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 from automation.cover_letter_generator import CoverLetterGenerator
 from automation.tracker_manager import ApplicationTracker
 from automation.form_assistant import FormAssistant
