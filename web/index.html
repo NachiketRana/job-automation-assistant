@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Copilot | 150-Job Automation Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-icon">
+        <span class="pulse-ring"></span>
+        ⚡
+      </div>
+      <div class="brand-text">
+        <h1>JOB COPILOT <span class="badge-pro">PRO</span></h1>
+        <p class="brand-sub">150-Job Automation & Campaign Management</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-btn active" data-tab="copilot" id="tabBtnCopilot">
+        <span class="icon">🚀</span> Copilot & Logs
+      </button>
+      <button class="nav-btn" data-tab="cover-letter" id="tabBtnCoverLetter">
+        <span class="icon">📝</span> Cover Letter Studio
+      </button>
+      <button class="nav-btn" data-tab="profile" id="tabBtnProfile">
+        <span class="icon">⚙️</span> Screening & Profile
+      </button>
+      <button class="nav-btn" data-tab="tracker" id="tabBtnTracker">
+        <span class="icon">📊</span> Application History
+      </button>
+    </nav>
+
+    <!-- Status Badges -->
+    <div class="nav-status">
+      <div class="status-pill" id="wsStatusPill">
+        <span class="status-dot"></span>
+        <span id="wsStatusText">Connecting...</span>
+      </div>
+      <div class="status-pill browser-pill" id="browserStatusPill">
+        <span class="browser-dot"></span>
+        <span id="browserStatusText">Browser: Standby</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <!-- Top KPI Metrics Ribbon -->
+    <section class="kpi-ribbon">
+      <div class="kpi-card total-kpi">
+        <div class="kpi-header">
+          <span class="kpi-title">TOTAL PROGRESS</span>
+          <span class="kpi-badge" id="kpiPercentBadge">0%</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-num" id="kpiTotalNum">0</span>
+          <span class="kpi-denom">/ 150 Applications</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="kpiTotalFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="kpi-card tech-kpi">
+        <div class="kpi-header">
+          <span class="kpi-title">💻 TECH TRACK</span>
+          <span class="kpi-target">Target: 100</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-num" id="kpiTechNum">0</span>
+          <span class="kpi-denom">Full-Stack Roles</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill tech-fill" id="kpiTechFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="kpi-card social-kpi">
+        <div class="kpi-header">
+          <span class="kpi-title">📱 SOCIAL MEDIA TRACK</span>
+          <span class="kpi-target">Target: 50</span>
+        </div>
+        <div class="kpi-value-row">
+          <span class="kpi-num" id="kpiSocialNum">0</span>
+          <span class="kpi-denom">Growth & Marketing</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill social-fill" id="kpiSocialFill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="kpi-card stats-kpi">
+        <div class="kpi-header">
+          <span class="kpi-title">🎯 CAMPAIGN STATUS</span>
+          <span class="badge-active">ACTIVE</span>
+        </div>
+        <div class="kpi-details">
+          <div class="detail-row">
+            <span>Interview Projection:</span>
+            <strong id="projInterviews">8-18 Interviews</strong>
+          </div>
+          <div class="detail-row">
+            <span>Expected Offers:</span>
+            <strong class="highlight-text">2-4 Offers</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: COPILOT & REAL-TIME LOGS -->
+    <section class="tab-pane active" id="pane-copilot">
+      <div class="copilot-grid">
+        <!-- Left: Portal Launchers & Actions -->
+        <div class="copilot-left">
+          <!-- Quick Launch Portal Card -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2>🌐 Target Job Portals</h2>
+              <span class="hint">Persistent session retains your logins</span>
+            </div>
+            
+            <div class="portal-btn-grid">
+              <button class="portal-btn" data-url="https://www.linkedin.com/jobs/search/?f_AL=true&keywords=Full%20Stack%20Developer">
+                <span class="portal-icon">💼</span>
+                <div class="portal-info">
+                  <strong>LinkedIn Tech</strong>
+                  <small>Easy Apply • Full-Stack</small>
+                </div>
+              </button>
+
+              <button class="portal-btn" data-url="https://www.linkedin.com/jobs/search/?f_AL=true&keywords=Social%20Media%20Marketing">
+                <span class="portal-icon">📱</span>
+                <div class="portal-info">
+                  <strong>LinkedIn Social</strong>
+                  <small>Easy Apply • Marketing</small>
+                </div>
+              </button>
+
+              <button class="portal-btn" data-url="https://wellfound.com/jobs">
+                <span class="portal-icon">🚀</span>
+                <div class="portal-info">
+                  <strong>Wellfound</strong>
+                  <small>High Growth Startups</small>
+                </div>
+              </button>
+
+              <button class="portal-btn" data-url="https://www.instahyre.com/jobs/">
+                <span class="portal-icon">⚡</span>
+                <div class="portal-info">
+                  <strong>Instahyre</strong>
+                  <small>1-Click Fast Apply India</small>
+                </div>
+              </button>
+
+              <button class="portal-btn" data-url="https://www.indeed.com/jobs?q=Full+Stack+Developer&vjk=1">
+                <span class="portal-icon">📌</span>
+                <div class="portal-info">
+                  <strong>Indeed</strong>
+                  <small>Easily Apply Filter</small>
+                </div>
+              </button>
+
+              <button class="portal-btn custom-url-btn" id="btnCustomUrl">
+                <span class="portal-icon">🔗</span>
+                <div class="portal-info">
+                  <strong>Custom URL</strong>
+                  <small>Any application page</small>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Copilot Controls Card -->
+          <div class="glass-card">
+            <div class="card-header">
+              <h2>⚡ Application Copilot Controls</h2>
+              <span class="badge-safe">🛡️ Anti-Bot Protected</span>
+            </div>
+
+            <div class="action-grid">
+              <button class="action-btn btn-primary" id="btnLaunchBrowser">
+                <span class="btn-icon">🌐</span>
+                <div class="btn-text">
+                  <strong>Launch Browser</strong>
+                  <small>Open persistent window</small>
+                </div>
+              </button>
+
+              <button class="action-btn btn-accent" id="btnAutofill">
+                <span class="btn-icon">⚡</span>
+                <div class="btn-text">
+                  <strong>Smart Auto-Fill</strong>
+                  <small>Fill active form inputs & questions</small>
+                </div>
+              </button>
+
+              <button class="action-btn btn-purple" id="btnInjectCL">
+                <span class="btn-icon">📝</span>
+                <div class="btn-text">
+                  <strong>Inject Cover Letter</strong>
+                  <small>Paste tailored letter to active box</small>
+                </div>
+              </button>
+
+              <button class="action-btn btn-emerald" id="btnSafeBatch">
+                <span class="btn-icon">🤖</span>
+                <div class="btn-text">
+                  <strong>Safe Step Apply</strong>
+                  <small>Paced application with review</small>
+                </div>
+              </button>
+
+              <button class="action-btn btn-blue" id="btnLogApplication">
+                <span class="btn-icon">➕</span>
+                <div class="btn-text">
+                  <strong>Log Application</strong>
+                  <small>Record submission to CSV</small>
+                </div>
+              </button>
+
+              <button class="action-btn btn-danger" id="btnCloseBrowser">
+                <span class="btn-icon">🛑</span>
+                <div class="btn-text">
+                  <strong>Close Browser</strong>
+                  <small>Safely end session</small>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Real-Time Logs Console -->
+        <div class="copilot-right">
+          <div class="glass-card console-card">
+            <div class="console-header">
+              <div class="console-controls">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+                <span class="console-title">LIVE EVENT STREAM & DIAGNOSTICS</span>
+              </div>
+              <div class="console-actions">
+                <button class="console-btn" id="btnClearLogs">Clear</button>
+                <label class="autoscroll-toggle">
+                  <input type="checkbox" id="chkAutoScroll" checked> Auto-Scroll
+                </label>
+              </div>
+            </div>
+
+            <!-- Terminal Output Area -->
+            <div class="console-stream" id="consoleStream">
+              <div class="log-entry info">
+                <span class="log-time">00:00:00</span>
+                <span class="log-level">[SYSTEM]</span>
+                <span class="log-msg">Job Copilot Server initialized. Ready to launch browser.</span>
+              </div>
+            </div>
+
+            <!-- Console Footer -->
+            <div class="console-footer">
+              <span class="footer-tip">💡 <strong>Copilot Tip:</strong> Log in once to LinkedIn or Wellfound. Your cookies stay preserved in local session data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: COVER LETTER STUDIO -->
+    <section class="tab-pane" id="pane-cover-letter">
+      <div class="cl-grid">
+        <!-- Generator Form -->
+        <div class="glass-card cl-form-card">
+          <h2>📝 Tailor Your Cover Letter</h2>
+          <p class="card-desc">Generate personalized letters that highlight proven metrics like 30% API throughput and 40% organic growth.</p>
+
+          <form id="clForm">
+            <div class="form-group">
+              <label for="clCompany">Target Company Name</label>
+              <input type="text" id="clCompany" placeholder="e.g. Swiggy, Razorpay, Zepto" required>
+            </div>
+
+            <div class="form-group">
+              <label for="clRole">Job Title / Position</label>
+              <input type="text" id="clRole" placeholder="e.g. Full-Stack Developer, Frontend Engineer" required>
+            </div>
+
+            <div class="form-group">
+              <label for="clCategory">Track Category</label>
+              <select id="clCategory">
+                <option value="Tech">💻 Tech (Full-Stack / React / Node / PostgreSQL)</option>
+                <option value="Social">📱 Social Media & Content Growth</option>
+              </select>
+            </div>
+
+            <div class="cl-actions-row">
+              <button type="submit" class="btn-primary" id="btnGenerateCL">Generate Letter</button>
+              <button type="button" class="btn-accent" id="btnInjectFromStudio">Inject to Active Browser</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Live Preview Output -->
+        <div class="glass-card cl-preview-card">
+          <div class="preview-header">
+            <h3>Subject & Preview</h3>
+            <button class="btn-copy" id="btnCopyCL">📋 Copy Text</button>
+          </div>
+          <div class="cl-subject-box" id="clSubjectBox">
+            Subject: Application for Full-Stack Developer - Nachiket Rana
+          </div>
+          <textarea class="cl-body-box" id="clBodyBox" readonly></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SCREENING QUESTIONS & PROFILE -->
+    <section class="tab-pane" id="pane-profile">
+      <div class="profile-layout">
+        <div class="profile-header-card glass-card">
+          <div class="profile-title-block">
+            <h2>⚙️ Screening Questions & Profile Knowledge Base</h2>
+            <p>Job application forms ask complex screening questions. Pre-configure your answers here so the auto-fill engine answers them accurately.</p>
+          </div>
+          <button class="btn-primary" id="btnSaveProfile">💾 Save Profile Settings</button>
+        </div>
+
+        <div class="profile-sections-grid">
+          <!-- Personal Info -->
+          <div class="glass-card">
+            <h3>👤 Personal & Contact Info</h3>
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="profFullName">
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="profEmail">
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="profPhone">
+              </div>
+              <div class="form-group">
+                <label>Location / City</label>
+                <input type="text" id="profCity">
+              </div>
+              <div class="form-group">
+                <label>LinkedIn URL</label>
+                <input type="text" id="profLinkedin">
+              </div>
+              <div class="form-group">
+                <label>GitHub URL</label>
+                <input type="text" id="profGithub">
+              </div>
+              <div class="form-group full-width">
+                <label>Portfolio / Website</label>
+                <input type="text" id="profPortfolio">
+              </div>
+            </div>
+          </div>
+
+          <!-- Work Auth & Legal -->
+          <div class="glass-card">
+            <h3>🛡️ Legal & Work Authorization</h3>
+            <div class="input-grid-2">
+              <div class="form-group">
+                <label>Legally Authorized to Work?</label>
+                <select id="profWorkAuth">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Require Visa Sponsorship?</label>
+                <select id="profSponsorship">
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Notice Period</label>
+                <input type="text" id="profNotice" placeholder="Immediate / 15 days">
+              </div>
+              <div class="form-group">
+                <label>Willing to Relocate?</label>
+                <select id="profRelocate">
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expected Tech CTC (PA)</label>
+                <input type="text" id="profSalaryTech" placeholder="₹6,00,000 - ₹10,00,000 PA">
+              </div>
+              <div class="form-group">
+                <label>Expected Social CTC (PA)</label>
+                <input type="text" id="profSalarySocial" placeholder="₹3,50,000 - ₹5,00,000 PA">
+              </div>
+            </div>
+          </div>
+
+          <!-- Screening Long Answers -->
+          <div class="glass-card full-width">
+            <h3>🧠 Standard Screening Question Responses</h3>
+            <div class="form-group">
+              <label>Elevator Pitch / Summary for Recruiters</label>
+              <textarea id="profPitch" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Why are you interested in our company?</label>
+              <textarea id="profWhyCompany" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Key Technical Achievement</label>
+              <textarea id="profAchievement" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: APPLICATION HISTORY -->
+    <section class="tab-pane" id="pane-tracker">
+      <div class="glass-card tracker-card">
+        <div class="tracker-header">
+          <div>
+            <h2>📊 Application History & Tracking</h2>
+            <p>Every submitted application is recorded in <code>data/job_tracker.csv</code>.</p>
+          </div>
+          <button class="btn-accent" id="btnManualLogModal">➕ Add Manual Application</button>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="appsTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Category</th>
+                <th>Platform</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="appsTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal for Manual Log -->
+  <div class="modal-backdrop" id="logModal">
+    <div class="modal-box glass-card">
+      <div class="modal-header">
+        <h3>➕ Record Job Application</h3>
+        <button class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <form id="manualLogForm">
+        <div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="logCompany" required placeholder="e.g. Swiggy">
+        </div>
+        <div class="form-group">
+          <label>Role / Position</label>
+          <input type="text" id="logRole" required placeholder="e.g. Full-Stack Developer">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="logCategory">
+            <option value="Tech">Tech</option>
+            <option value="Social">Social Media</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Platform</label>
+          <input type="text" id="logPlatform" value="LinkedIn">
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Save Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
