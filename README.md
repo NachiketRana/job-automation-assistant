@@ -116,15 +116,26 @@ Edit [`config/profile.json`](config/profile.json) with your personal contact inf
 }
 ```
 
-### 4. Run the Assistant
+### 4. Run the Assistant & Web Dashboard
 
-**Option A (Terminal):**
+**Option A — Web Dashboard (Recommended ⭐):**
+Double-click [`run_dashboard.bat`](run_dashboard.bat) or run:
+```bash
+python dashboard_server.py
+```
+Open your browser at **`http://localhost:8000`** to access:
+* 📊 Real-time Campaign Progress Metrics & Charts
+* 🚀 One-click Target Job Portal Launchers (LinkedIn, Wellfound, Instahyre, Indeed)
+* ⚡ 1-Click Smart Form Auto-Fill (Inputs, Radio Buttons, Screening Questions)
+* 📝 Tailored Cover Letter Generator & 1-Click Form Injector
+* 💻 Real-time Diagnostic Log Stream over WebSockets
+* ⚙️ Interactive Profile & Screening Questions Editor
+
+**Option B — Terminal CLI:**
+Double-click [`run_assistant.bat`](run_assistant.bat) or run:
 ```bash
 python main.py
 ```
-
-**Option B (Windows Explorer):**
-Double-click `run_assistant.bat`.
 
 ---
 
