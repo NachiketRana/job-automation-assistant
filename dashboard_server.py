@@ -176,4 +176,4 @@ if __name__ == "__main__":
     print("   🚀 STARTING JOB COPILOT DASHBOARD SERVER")
     print("   👉 Open your browser at: http://localhost:8000")
     print("=" * 65 + "\n")
-    uvicorn.run("dashboard_server.py:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
