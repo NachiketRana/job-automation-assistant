@@ -178,6 +178,22 @@
             </div>
           </div>
 
+          <!-- Wellfound 10-Company Guided Queue Card -->
+          <div class="glass-card wellfound-feature-card">
+            <div class="card-header">
+              <h2>🚀 Wellfound 10-Company Guided Apply</h2>
+              <span class="badge-pro">1-Click Review Mode</span>
+            </div>
+            <p class="card-desc-compact">
+              Iterates through <strong>10 companies</strong> on Wellfound. Automatically drafts a tailored pitch note for each hiring manager and pauses so you just click <strong>"Yes, Submit"</strong> to approve each one!
+            </p>
+            <div class="wellfound-action-row">
+              <button class="btn-wellfound-start" id="btnStartWellfoundQueue">
+                ⚡ Start 10-Company Wellfound Queue
+              </button>
+            </div>
+          </div>
+
           <!-- Copilot Controls Card -->
           <div class="glass-card">
             <div class="card-header">
@@ -460,6 +476,47 @@
       </div>
     </section>
   </main>
+
+  <!-- Floating Review Banner / Modal for Wellfound Queue -->
+  <div class="review-banner-overlay" id="wellfoundReviewOverlay">
+    <div class="review-card glass-card">
+      <div class="review-header">
+        <div class="review-title-box">
+          <span class="badge-review">🔔 REVIEW REQUIRED</span>
+          <h3 id="reviewCompanyTitle">Startup — Full-Stack Developer</h3>
+        </div>
+        <span class="review-counter" id="reviewProgressBadge">Company 1 of 10</span>
+      </div>
+
+      <div class="review-body">
+        <p class="review-instruction">
+          👉 The assistant has opened the Wellfound application form and auto-filled your contact details and this tailored pitch note:
+        </p>
+        <div class="review-note-box" id="reviewNotePreview">
+          <!-- Injected tailored pitch note preview -->
+        </div>
+        <p class="review-subtext">Glance at the open browser window to confirm everything looks good, then click below to submit!</p>
+      </div>
+
+      <div class="review-actions-row">
+        <button class="btn-confirm-submit" id="btnConfirmSubmit">
+          <span class="btn-icon">✅</span>
+          <div class="btn-text">
+            <strong>YES, SUBMIT APPLICATION</strong>
+            <small>Submits to company & opens next one (or press Enter)</small>
+          </div>
+        </button>
+
+        <button class="btn-review-skip" id="btnSkipCompany">
+          ⏭️ Skip Company
+        </button>
+
+        <button class="btn-review-stop" id="btnStopQueue">
+          🛑 Stop Queue
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal for Manual Log -->
   <div class="modal-backdrop" id="logModal">

@@ -171,6 +171,31 @@ async def close_browser_endpoint():
     await manager.broadcast_json({"type": "status", **status})
     return {"success": True}
 
+# Wellfound 10-Company Guided Auto-Apply Queue Endpoints
+class WellfoundQueueRequest(BaseModel):
+    max_companies: int = 10
+
+@app.post("/api/wellfound/start-queue")
+async def wellfound_start_queue(req: WellfoundQueueRequest):
+    asyncio.create_task(browser_engine.start_wellfound_batch_queue(max_companies=req.max_companies))
+    return {"success": True, "message": f"Starting Wellfound queue for {req.max_companies} companies."}
+
+@app.post("/api/wellfound/confirm-submit")
+async def wellfound_confirm_submit():
+    asyncio.create_task(browser_engine.confirm_current_submission())
+    return {"success": True, "message": "Submission approved. Processing and advancing queue..."}
+
+@app.post("/api/wellfound/skip")
+async def wellfound_skip():
+    asyncio.create_task(browser_engine.skip_current_submission())
+    return {"success": True, "message": "Skipped company. Advancing queue..."}
+
+@app.post("/api/wellfound/stop")
+async def wellfound_stop():
+    result = await browser_engine.stop_batch_queue()
+    return result
+
+
 if __name__ == "__main__":
     print("\n" + "=" * 65)
     print("   🚀 STARTING JOB COPILOT DASHBOARD SERVER")

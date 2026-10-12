@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchProfile();
   fetchApplications();
   bindCopilotControls();
+  bindWellfoundQueueControls();
   bindCoverLetterStudio();
   bindProfileForm();
   bindTrackerModal();
@@ -58,6 +59,12 @@ function connectWebSocket() {
           updateBrowserStatus(data.is_running, data.current_url);
         } else if (data.type === "stats") {
           updateKpis(data);
+        } else if (data.type === "wellfound_review") {
+          showWellfoundReview(data);
+        } else if (data.type === "wellfound_finished" || data.type === "wellfound_stopped") {
+          hideWellfoundReview();
+          fetchStats();
+          fetchApplications();
         }
       } catch (err) {
         console.error("WS Parse error:", err);
@@ -429,3 +436,92 @@ function escapeHtml(str) {
   if (!str) return "";
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+
+// WELLFOUND GUIDED QUEUE CONTROLS
+function bindWellfoundQueueControls() {
+  const btnStart = document.getElementById("btnStartWellfoundQueue");
+  const btnConfirm = document.getElementById("btnConfirmSubmit");
+  const btnSkip = document.getElementById("btnSkipCompany");
+  const btnStop = document.getElementById("btnStopQueue");
+
+  if (btnStart) {
+    btnStart.addEventListener("click", async () => {
+      try {
+        btnStart.innerText = "⏳ Initializing Wellfound Queue...";
+        btnStart.disabled = true;
+        await fetch("/api/wellfound/start-queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ max_companies: 10 })
+        });
+        setTimeout(() => {
+          btnStart.innerText = "⚡ Start 10-Company Wellfound Queue";
+          btnStart.disabled = false;
+        }, 2000);
+      } catch (err) {
+        console.error("Wellfound start error:", err);
+        btnStart.disabled = false;
+      }
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener("click", async () => {
+      hideWellfoundReview();
+      try {
+        await fetch("/api/wellfound/confirm-submit", { method: "POST" });
+      } catch (err) {
+        console.error("Confirm submit error:", err);
+      }
+    });
+  }
+
+  if (btnSkip) {
+    btnSkip.addEventListener("click", async () => {
+      hideWellfoundReview();
+      try {
+        await fetch("/api/wellfound/skip", { method: "POST" });
+      } catch (err) {
+        console.error("Skip error:", err);
+      }
+    });
+  }
+
+  if (btnStop) {
+    btnStop.addEventListener("click", async () => {
+      hideWellfoundReview();
+      try {
+        await fetch("/api/wellfound/stop", { method: "POST" });
+      } catch (err) {
+        console.error("Stop error:", err);
+      }
+    });
+  }
+
+  // Keyboard shortcut: Press Enter to submit review when overlay is active
+  window.addEventListener("keydown", (e) => {
+    const overlay = document.getElementById("wellfoundReviewOverlay");
+    if (overlay && overlay.classList.contains("open") && e.key === "Enter" && !e.shiftKey) {
+      if (btnConfirm) btnConfirm.click();
+    }
+  });
+}
+
+function showWellfoundReview(data) {
+  const overlay = document.getElementById("wellfoundReviewOverlay");
+  const title = document.getElementById("reviewCompanyTitle");
+  const badge = document.getElementById("reviewProgressBadge");
+  const noteBox = document.getElementById("reviewNotePreview");
+
+  if (title) title.innerText = `${data.company || "Company"} — ${data.role || "Developer"}`;
+  if (badge) badge.innerText = `Company ${data.current_index || 1} of ${data.total_queue || 10}`;
+  if (noteBox) noteBox.innerText = data.note_preview || "";
+
+  if (overlay) overlay.classList.add("open");
+}
+
+function hideWellfoundReview() {
+  const overlay = document.getElementById("wellfoundReviewOverlay");
+  if (overlay) overlay.classList.remove("open");
+}
+
