@@ -28,6 +28,9 @@
       <button class="nav-btn active" data-tab="copilot" id="tabBtnCopilot">
         <span class="icon">🚀</span> Copilot & Logs
       </button>
+      <button class="nav-btn" data-tab="invisibledots" id="tabBtnDots">
+        <span class="icon">🟣</span> InvisibleDots VMs
+      </button>
       <button class="nav-btn" data-tab="cover-letter" id="tabBtnCoverLetter">
         <span class="icon">📝</span> Cover Letter Studio
       </button>
@@ -41,6 +44,10 @@
 
     <!-- Status Badges -->
     <div class="nav-status">
+      <div class="status-pill dots-pill" id="dotsStatusPill" title="Click to view InvisibleDots VMs">
+        <span class="dots-dot"></span>
+        <span id="dotsStatusText">Dots: Standby</span>
+      </div>
       <div class="status-pill" id="wsStatusPill">
         <span class="status-dot"></span>
         <span id="wsStatusText">Connecting...</span>
@@ -178,18 +185,24 @@
             </div>
           </div>
 
-          <!-- Wellfound 10-Company Guided Queue Card -->
+          <!-- Wellfound Continuous Guided Queue Card -->
           <div class="glass-card wellfound-feature-card">
             <div class="card-header">
-              <h2>🚀 Wellfound 10-Company Guided Apply</h2>
+              <h2>🚀 Wellfound Continuous Apply</h2>
               <span class="badge-pro">1-Click Review Mode</span>
             </div>
             <p class="card-desc-compact">
-              Iterates through <strong>10 companies</strong> on Wellfound. Automatically drafts a tailored pitch note for each hiring manager and pauses so you just click <strong>"Yes, Submit"</strong> to approve each one!
+              Continuously finds unapplied companies on Wellfound, automatically drafts a tailored pitch note for each hiring manager, auto-fills questions, and pauses so you just click <strong>"Yes, Submit"</strong> (or hit <code>Enter</code>) to approve!
             </p>
             <div class="wellfound-action-row">
+              <select id="wellfoundBatchCount" class="wellfound-select">
+                <option value="10">⚡ Batch: 10 Companies</option>
+                <option value="25">🚀 Batch: 25 Companies</option>
+                <option value="50">🔥 Batch: 50 Companies</option>
+                <option value="999">♾️ Continuous Mode (Keep Going)</option>
+              </select>
               <button class="btn-wellfound-start" id="btnStartWellfoundQueue">
-                ⚡ Start 10-Company Wellfound Queue
+                ▶ Start Queue
               </button>
             </div>
           </div>
@@ -472,6 +485,136 @@
               <!-- Dynamically populated -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- TAB 5: INVISIBLE_DOTS CONTROL PLANE & FLEET -->
+    <section class="tab-pane" id="pane-invisibledots">
+      <div class="dots-dashboard-layout">
+        <!-- Control Plane Status Ribbon -->
+        <div class="glass-card dots-status-banner">
+          <div class="dots-banner-left">
+            <div class="dots-logo-icon">🟣</div>
+            <div>
+              <div class="dots-title-row">
+                <h2>InvisibleDots Agent Control Plane</h2>
+                <span class="badge-dots-live" id="dotsControlStatusBadge">Checking...</span>
+              </div>
+              <p class="dots-banner-desc">
+                Persistent hardware-accelerated Linux VMs (QEMU / WHPX) running undetectable anti-bot Playwright browsers. Powered by OpenRouter LLMs.
+              </p>
+            </div>
+          </div>
+
+          <div class="dots-banner-actions">
+            <button class="btn-dots-secondary" id="btnRefreshDots">
+              🔄 Refresh Fleet
+            </button>
+            <a href="http://127.0.0.2:3000" target="_blank" class="btn-dots-primary" id="btnOpenDotsWebUI">
+              🌐 Open Dots Web UI ↗
+            </a>
+          </div>
+        </div>
+
+        <div class="dots-grid-two-col">
+          <!-- Left Column: Provisioned Dots Fleet -->
+          <div class="dots-col-left">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="header-with-badge">
+                  <h2>🤖 Active AI Agent VMs (Dots)</h2>
+                  <span class="badge-count" id="dotsCountBadge">0 provisioned</span>
+                </div>
+                <button class="btn-provision-dot" id="btnProvisionJobDot">
+                  ➕ Connect / Provision Dot
+                </button>
+              </div>
+
+              <!-- Container where Dot cards will be injected -->
+              <div class="dots-fleet-container" id="dotsFleetContainer">
+                <div class="dots-loading-state">
+                  <div class="dots-spinner"></div>
+                  <p>Querying InvisibleDots local control plane (127.0.0.1:8787)...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Dispatch Stealth Task & System Specs -->
+          <div class="dots-col-right">
+            <!-- Stealth Automation Dispatcher -->
+            <div class="glass-card dots-dispatch-card">
+              <div class="card-header">
+                <h2>⚡ Dispatch Stealth Mission</h2>
+                <span class="badge-safe">🛡️ Anti-Bot Undetectable</span>
+              </div>
+              <p class="card-desc-compact">
+                Send autonomous browser tasks to the persistent VM. The Dot wakes up, interacts via patched Firefox, and persists authentication cookies.
+              </p>
+
+              <form id="dotsTaskForm">
+                <div class="form-group">
+                  <label for="taskTargetDot">Target Dot VM</label>
+                  <select id="taskTargetDot" class="dots-select">
+                    <option value="job-copilot">job-copilot (Gemini 2.0 Flash)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="taskPromptInput">Autonomous Task Prompt</label>
+                  <textarea id="taskPromptInput" rows="3" placeholder="e.g. Navigate to Wellfound, find unapplied Full-Stack developer positions in India, and summarize their requirements." required></textarea>
+                </div>
+
+                <div class="preset-prompts-row">
+                  <span class="preset-label">Quick Presets:</span>
+                  <button type="button" class="chip-preset" data-preset="Go to Wellfound, search for Full Stack Developer remote jobs, and extract the top 3 unapplied postings with hiring manager names.">🚀 Wellfound Top 3</button>
+                  <button type="button" class="chip-preset" data-preset="Open LinkedIn Jobs, search for Node.js React developer jobs in India with Easy Apply, and check screening criteria.">💼 LinkedIn Screening</button>
+                  <button type="button" class="chip-preset" data-preset="Inspect the current browser session, verify if the anti-bot cookies are valid, and return browser health.">🛡️ Check Anti-bot Session</button>
+                </div>
+
+                <div class="dots-dispatch-btn-row">
+                  <button type="submit" class="btn-dispatch-mission" id="btnDispatchMission">
+                    🚀 Dispatch Task to VM
+                  </button>
+                </div>
+              </form>
+
+              <div class="task-dispatch-feedback" id="taskDispatchFeedback" style="display: none;">
+                <!-- Result feedback rendered here -->
+              </div>
+            </div>
+
+            <!-- Diagnostics & VM Architecture Overview -->
+            <div class="glass-card dots-info-card">
+              <div class="card-header">
+                <h2>🖥️ Hypervisor Architecture</h2>
+                <span class="badge-whpx">WHPX / QEMU</span>
+              </div>
+              <div class="specs-grid">
+                <div class="spec-item">
+                  <span class="spec-label">Control Plane:</span>
+                  <span class="spec-val">127.0.0.1:8787 (Fastify/Node)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Web Client:</span>
+                  <span class="spec-val">127.0.0.2:3000 (Next.js)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">Database:</span>
+                  <span class="spec-val" id="dotsDbStatus">PGlite (Embedded)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-label">LLM Provider:</span>
+                  <span class="spec-val" id="dotsLlmStatus">OpenRouter Configured</span>
+                </div>
+              </div>
+              <div class="spec-tip-box">
+                💡 <strong>VM Note:</strong> To complete local VM image setup for the first boot, run:
+                <code>cd invisible_dots && node apps/cli/dist/invisible-dots.mjs image build</code>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

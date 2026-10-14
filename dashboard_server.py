@@ -19,8 +19,10 @@ if hasattr(sys.stdout, 'reconfigure'):
 from automation.tracker_manager import ApplicationTracker
 from automation.cover_letter_generator import CoverLetterGenerator
 from automation.browser_engine import BrowserEngine
+from automation.invisible_dots_client import InvisibleDotsClient
 
 app = FastAPI(title="Job Copilot Dashboard")
+dots_client = InvisibleDotsClient()
 
 # Mount static files
 WEB_DIR = os.path.abspath("web")
@@ -194,6 +196,42 @@ async def wellfound_skip():
 async def wellfound_stop():
     result = await browser_engine.stop_batch_queue()
     return result
+
+# InvisibleDots Agent Control Plane Endpoints
+class DotTaskRequest(BaseModel):
+    dot_name: str = "job-copilot"
+    prompt: str
+    priority: int = 0
+
+class DotProvisionRequest(BaseModel):
+    dot_name: str = "job-copilot"
+    model_id: str = "google/gemini-2.0-flash-001"
+
+@app.get("/api/invisibledots/status")
+async def get_invisible_dots_status():
+    server_online = dots_client.is_server_online()
+    health = dots_client.get_server_health() if server_online else {"status": "offline"}
+    dots = dots_client.list_dots() if server_online else []
+    return {
+        "server_online": server_online,
+        "base_url": dots_client.base_url,
+        "web_ui_url": "http://127.0.0.2:3000",
+        "health": health,
+        "dots": dots
+    }
+
+@app.post("/api/invisibledots/provision")
+async def provision_dot(req: DotProvisionRequest):
+    dot = dots_client.get_or_create_job_dot(dot_name=req.dot_name, model_id=req.model_id)
+    await browser_engine.log(f"InvisibleDots: Provisioned / Connected Dot '{req.dot_name}'", "info")
+    return {"success": True, "dot": dot}
+
+@app.post("/api/invisibledots/task")
+async def dispatch_dot_task(req: DotTaskRequest):
+    result = dots_client.send_task(req.dot_name, req.prompt, req.priority)
+    await browser_engine.log(f"InvisibleDots: Dispatched task to '{req.dot_name}': {req.prompt[:60]}...", "info")
+    return {"success": True, "result": result}
+
 
 
 if __name__ == "__main__":

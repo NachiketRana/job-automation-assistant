@@ -8,8 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchStats();
   fetchProfile();
   fetchApplications();
+  fetchInvisibleDotsStatus();
   bindCopilotControls();
   bindWellfoundQueueControls();
+  bindInvisibleDotsControls();
   bindCoverLetterStudio();
   bindProfileForm();
   bindTrackerModal();
@@ -446,16 +448,18 @@ function bindWellfoundQueueControls() {
 
   if (btnStart) {
     btnStart.addEventListener("click", async () => {
+      const selectEl = document.getElementById("wellfoundBatchCount");
+      const count = parseInt(selectEl ? selectEl.value : "10", 10);
       try {
-        btnStart.innerText = "⏳ Initializing Wellfound Queue...";
+        btnStart.innerText = "⏳ Starting Queue...";
         btnStart.disabled = true;
         await fetch("/api/wellfound/start-queue", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ max_companies: 10 })
+          body: JSON.stringify({ max_companies: count })
         });
         setTimeout(() => {
-          btnStart.innerText = "⚡ Start 10-Company Wellfound Queue";
+          btnStart.innerText = "▶ Start Queue";
           btnStart.disabled = false;
         }, 2000);
       } catch (err) {
@@ -514,7 +518,12 @@ function showWellfoundReview(data) {
   const noteBox = document.getElementById("reviewNotePreview");
 
   if (title) title.innerText = `${data.company || "Company"} — ${data.role || "Developer"}`;
-  if (badge) badge.innerText = `Company ${data.current_index || 1} of ${data.total_queue || 10}`;
+  const isContinuous = (data.total_queue || 10) >= 900;
+  if (badge) {
+    badge.innerText = isContinuous
+      ? `Company #${data.current_index || 1} (Continuous)`
+      : `Company ${data.current_index || 1} of ${data.total_queue || 10}`;
+  }
   if (noteBox) noteBox.innerText = data.note_preview || "";
 
   if (overlay) overlay.classList.add("open");
@@ -524,4 +533,290 @@ function hideWellfoundReview() {
   const overlay = document.getElementById("wellfoundReviewOverlay");
   if (overlay) overlay.classList.remove("open");
 }
+
+// INVISIBLE_DOTS CONTROL PLANE INTEGRATION
+async function fetchInvisibleDotsStatus() {
+  const pill = document.getElementById("dotsStatusPill");
+  const pillText = document.getElementById("dotsStatusText");
+  const badge = document.getElementById("dotsControlStatusBadge");
+  const countBadge = document.getElementById("dotsCountBadge");
+  const container = document.getElementById("dotsFleetContainer");
+  const targetSelect = document.getElementById("taskTargetDot");
+  const dbStatus = document.getElementById("dotsDbStatus");
+  const llmStatus = document.getElementById("dotsLlmStatus");
+
+  try {
+    const res = await fetch("/api/invisibledots/status");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    if (data.server_online) {
+      if (pill) pill.classList.add("online");
+      const dotsCount = (data.dots || []).length;
+      if (pillText) pillText.innerText = `Dots: ${dotsCount} VM${dotsCount === 1 ? '' : 's'}`;
+      if (badge) {
+        badge.className = "badge-dots-live online";
+        badge.innerText = "ONLINE (CONTROL PLANE)";
+      }
+      if (countBadge) countBadge.innerText = `${dotsCount} provisioned`;
+      if (dbStatus && data.health && data.health.database_kind) {
+        dbStatus.innerText = `${data.health.database_kind.toUpperCase()} (${data.health.database || 'ok'})`;
+      }
+      if (llmStatus && data.health) {
+        llmStatus.innerText = data.health.openrouter_configured ? "OpenRouter Active" : "OpenRouter Not Configured";
+      }
+
+      renderDotsFleet(data.dots || []);
+
+      // Populate target select
+      if (targetSelect && data.dots && data.dots.length > 0) {
+        targetSelect.innerHTML = data.dots.map(d => `
+          <option value="${d.name || d.id}">${d.name || d.id} (${(d.config && d.config.model && d.config.model.id) || "Gemini 2.0 Flash"})</option>
+        `).join("");
+      }
+    } else {
+      if (pill) pill.classList.remove("online");
+      if (pillText) pillText.innerText = "Dots: Offline";
+      if (badge) {
+        badge.className = "badge-dots-live offline";
+        badge.innerText = "OFFLINE (SERVER STOPPED)";
+      }
+      if (countBadge) countBadge.innerText = "0 provisioned";
+      if (container) {
+        container.innerHTML = `
+          <div class="dots-empty-state">
+            <span style="font-size: 32px;">🛑</span>
+            <strong>InvisibleDots Server is Offline</strong>
+            <p>Start the server in your terminal: <code>cd invisible_dots && node apps/cli/dist/invisible-dots.mjs server</code></p>
+            <button class="btn-dots-secondary" onclick="fetchInvisibleDotsStatus()">🔄 Try Reconnecting</button>
+          </div>
+        `;
+      }
+    }
+  } catch (err) {
+    if (pill) pill.classList.remove("online");
+    if (pillText) pillText.innerText = "Dots: Unreachable";
+    if (badge) {
+      badge.className = "badge-dots-live offline";
+      badge.innerText = "UNREACHABLE";
+    }
+    if (container) {
+      container.innerHTML = `
+        <div class="dots-empty-state">
+          <span>⚠️</span>
+          <p>Could not connect to invisible-dots status endpoint.</p>
+        </div>
+      `;
+    }
+  }
+}
+
+function renderDotsFleet(dots) {
+  const container = document.getElementById("dotsFleetContainer");
+  if (!container) return;
+
+  if (dots.length === 0) {
+    container.innerHTML = `
+      <div class="dots-empty-state">
+        <span style="font-size: 36px;">🤖</span>
+        <strong>No Dots Provisioned Yet</strong>
+        <p>Click "Connect / Provision Dot" above to create your persistent Job Hunter Agent VM.</p>
+        <button class="btn-provision-dot" onclick="handleProvisionJobDot()">➕ Provision job-copilot Dot</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = dots.map(dot => {
+    const name = dot.name || "dot";
+    const id = dot.id || "unknown";
+    const status = (dot.status || "STANDBY").toUpperCase();
+    const config = dot.config || {};
+    const computer = config.computer || { cpu: 2, memory: "4gb", disk: "40gb", idle_timeout: "15m" };
+    const model = (config.model && config.model.id) || "google/gemini-2.0-flash-001";
+    
+    let statusClass = "ready";
+    if (status.includes("ERR")) statusClass = "error";
+    else if (status.includes("SLEEP") || status.includes("IDLE")) statusClass = "idle";
+
+    const errorHtml = dot.error ? `
+      <div style="margin-top: 10px; font-size: 0.75rem; color: #f87171; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 10px; border-radius: 6px;">
+        ⚠️ <strong>Notice:</strong> ${escapeHtml(dot.error.includes("images") ? "VM Golden Image required for first boot. Run 'invisible-dots image build'." : dot.error)}
+      </div>
+    ` : "";
+
+    return `
+      <div class="dot-card" id="card-${id}">
+        <div class="dot-card-header">
+          <div class="dot-card-title-group">
+            <div class="dot-card-name">
+              <span>🤖</span> ${escapeHtml(name)}
+              <span class="dot-id-tag">${id}</span>
+            </div>
+            <small style="color: var(--text-dim); font-size: 0.75rem;">Created: ${dot.created_at ? new Date(dot.created_at).toLocaleDateString() : 'Active'}</small>
+          </div>
+          <span class="dot-status-tag ${statusClass}">${status}</span>
+        </div>
+
+        <div class="dot-specs-grid">
+          <div class="dot-spec-pill">
+            <span class="lbl">vCPU</span>
+            <span class="val">${computer.cpu || 2} Cores</span>
+          </div>
+          <div class="dot-spec-pill">
+            <span class="lbl">Memory</span>
+            <span class="val">${computer.memory || "4gb"} RAM</span>
+          </div>
+          <div class="dot-spec-pill">
+            <span class="lbl">Disk</span>
+            <span class="val">${computer.disk || "40gb"}</span>
+          </div>
+          <div class="dot-spec-pill">
+            <span class="lbl">Idle Sleep</span>
+            <span class="val">${computer.idle_timeout || "15m"}</span>
+          </div>
+        </div>
+
+        <div class="dot-model-row">
+          <span>🧠 Model: <strong class="dot-model-name">${escapeHtml(model)}</strong></span>
+          <span style="font-size: 0.72rem; color: #34d399;">🛡️ Undetectable Playwright Active</span>
+        </div>
+
+        ${errorHtml}
+
+        <div class="dot-card-actions">
+          <button class="btn-dot-action primary" onclick="prepareTaskForDot('${escapeHtml(name)}')">
+            ⚡ Dispatch Mission
+          </button>
+          <button class="btn-dot-action" onclick="copyToClipboard('${id}', 'Dot ID copied to clipboard!')">
+            📋 Copy ID
+          </button>
+          <a href="http://127.0.0.2:3000/dots/${id}" target="_blank" class="btn-dot-action" style="text-decoration: none;">
+            ↗ View in Control Plane
+          </a>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function prepareTaskForDot(dotName) {
+  const select = document.getElementById("taskTargetDot");
+  const promptInput = document.getElementById("taskPromptInput");
+  if (select) select.value = dotName;
+  if (promptInput) {
+    promptInput.focus();
+    promptInput.scrollIntoView({ behavior: "smooth" });
+  }
+}
+
+async function handleProvisionJobDot() {
+  const btn = document.getElementById("btnProvisionJobDot");
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Provisioning...";
+  }
+  try {
+    const res = await fetch("/api/invisibledots/provision", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dot_name: "job-copilot", model_id: "google/gemini-2.0-flash-001" })
+    });
+    const result = await res.json();
+    if (result.success) {
+      alert("✅ Dot 'job-copilot' successfully connected / provisioned!");
+      fetchInvisibleDotsStatus();
+    } else {
+      alert(`⚠️ Provision notice: ${JSON.stringify(result)}`);
+    }
+  } catch (err) {
+    alert(`Failed to provision dot: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = "➕ Connect / Provision Dot";
+    }
+  }
+}
+
+function bindInvisibleDotsControls() {
+  const pill = document.getElementById("dotsStatusPill");
+  if (pill) {
+    pill.addEventListener("click", () => {
+      const tabBtn = document.getElementById("tabBtnDots");
+      if (tabBtn) tabBtn.click();
+    });
+  }
+
+  const btnRefresh = document.getElementById("btnRefreshDots");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", () => {
+      fetchInvisibleDotsStatus();
+    });
+  }
+
+  const btnProvision = document.getElementById("btnProvisionJobDot");
+  if (btnProvision) {
+    btnProvision.addEventListener("click", handleProvisionJobDot);
+  }
+
+  // Preset chips
+  const chips = document.querySelectorAll(".chip-preset");
+  chips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      const preset = chip.getAttribute("data-preset");
+      const input = document.getElementById("taskPromptInput");
+      if (input && preset) {
+        input.value = preset;
+        input.focus();
+      }
+    });
+  });
+
+  // Task form
+  const taskForm = document.getElementById("dotsTaskForm");
+  const feedback = document.getElementById("taskDispatchFeedback");
+  if (taskForm) {
+    taskForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const dotName = document.getElementById("taskTargetDot").value;
+      const prompt = document.getElementById("taskPromptInput").value.trim();
+      const btnSubmit = document.getElementById("btnDispatchMission");
+
+      if (!prompt) return;
+
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "🚀 Dispatching to VM...";
+      }
+
+      if (feedback) {
+        feedback.style.display = "block";
+        feedback.innerText = "Submitting task to VM control plane...";
+      }
+
+      try {
+        const res = await fetch("/api/invisibledots/task", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dot_name: dotName, prompt: prompt })
+        });
+        const data = await res.json();
+        if (feedback) {
+          feedback.innerText = `✅ Mission Queued Successfully!\nTask ID: ${(data.result && (data.result.task_id || data.result.id)) || 'Created'}\nTarget: ${dotName}\nPrompt: "${prompt}"\n\nMonitor live output on the Copilot terminal or at http://127.0.0.2:3000`;
+        }
+      } catch (err) {
+        if (feedback) {
+          feedback.innerText = `❌ Error dispatching task: ${err.message}`;
+        }
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "🚀 Dispatch Task to VM";
+        }
+      }
+    });
+  }
+}
+
 

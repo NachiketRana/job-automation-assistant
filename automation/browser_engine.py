@@ -33,7 +33,7 @@ class BrowserEngine:
         self.pending_company = ""
         self.pending_role = ""
         self.pending_note = ""
-        self.processed_indices: Set[int] = set()
+        self.processed_companies: Set[str] = set()
 
     def load_profile(self):
         if os.path.exists(self.config_path):
@@ -291,12 +291,46 @@ class BrowserEngine:
             return {"success": False, "error": str(e), "cover_letter": result}
 
     # =========================================================================
-    # WELLFOUND 10-COMPANY GUIDED AUTO-APPLY PIPELINE (WITH USER REVIEW)
+    # WELLFOUND CONTINUOUS GUIDED AUTO-APPLY PIPELINE (WITH USER REVIEW)
     # =========================================================================
+
+    async def _close_any_active_modal(self):
+        """Ensures any application modal, drawer, or success popup is dismissed so subsequent jobs can be clicked."""
+        if not self.page or self.page.is_closed():
+            return
+
+        close_selectors = [
+            "button:has-text('Done')",
+            "button:has-text('Back to jobs')",
+            "button:has-text('Close')",
+            "button[aria-label*='Close' i]",
+            "button[aria-label*='Dismiss' i]",
+            "div[role='dialog'] button:has-text('Cancel')",
+            "button:has-text('Cancel')",
+            "svg[data-icon='xmark']"
+        ]
+        for sel in close_selectors:
+            try:
+                btns = await self.page.query_selector_all(sel)
+                for b in btns:
+                    if await b.is_visible():
+                        await b.click()
+                        await asyncio.sleep(0.8)
+                        break
+            except Exception:
+                pass
+
+        try:
+            await self.page.keyboard.press("Escape")
+            await asyncio.sleep(0.5)
+            await self.page.keyboard.press("Escape")
+            await asyncio.sleep(0.5)
+        except Exception:
+            pass
 
     async def start_wellfound_batch_queue(self, max_companies: int = 10):
         """
-        Starts the 10-Company Guided Queue on Wellfound.
+        Starts the Guided Queue on Wellfound.
         Opens each job card, generates customized pitch note, fills screening fields,
         and pauses for the user to review and click 'Yes, Submit'.
         """
@@ -308,9 +342,10 @@ class BrowserEngine:
         self.queue_active = True
         self.queue_total = max_companies
         self.queue_current = 0
-        self.processed_indices.clear()
+        self.processed_companies.clear()
 
-        await self.log(f"🚀 Initializing Wellfound Guided Queue for {max_companies} companies...", "action")
+        limit_label = f"{max_companies} companies" if max_companies < 900 else "Continuous Mode"
+        await self.log(f"🚀 Initializing Wellfound Guided Queue ({limit_label})...", "action")
         await self.log("The assistant will prepare each application with a tailored pitch, then pause for your approval.", "info")
 
         return await self._prepare_next_wellfound_job()
@@ -326,72 +361,104 @@ class BrowserEngine:
             await self.broadcast_event({"type": "wellfound_finished", "total_applied": self.queue_total})
             return {"success": True, "finished": True}
 
-        await self.log(f"🔍 [Queue {self.queue_current + 1}/{self.queue_total}] Scanning Wellfound for next available job...", "action")
+        queue_label = f"{self.queue_current + 1}/{self.queue_total}" if self.queue_total < 900 else f"#{self.queue_current + 1}"
+        await self.log(f"🔍 [Queue {queue_label}] Scanning Wellfound for next available job...", "action")
 
-        # Scroll slightly to trigger dynamic React loading
-        try:
-            await self.page.evaluate("window.scrollBy(0, 350);")
-            await asyncio.sleep(1)
-        except Exception:
-            pass
+        # Make sure any lingering dialog from previous action is dismissed
+        await self._close_any_active_modal()
 
-        # Locate Apply buttons
-        apply_buttons = await self.page.query_selector_all("button:has-text('Apply'), a:has-text('Apply')")
-        
         target_btn = None
         target_card = None
         company_name = "Startup"
         role_title = "Full-Stack Developer"
 
-        for idx, btn in enumerate(apply_buttons):
-            if idx in self.processed_indices:
-                continue
-            try:
-                if await btn.is_visible():
-                    txt = (await btn.text_content()).strip().lower()
-                    if "applied" not in txt and "save" not in txt:
-                        target_btn = btn
-                        self.processed_indices.add(idx)
-                        break
-            except Exception:
-                continue
-
-        # If no direct button found, search for job card containers to click and open details
-        if not target_btn:
-            cards = await self.page.query_selector_all("div[class*='jobCard'], div[class*='styles_component'], div[data-test*='StartupResult']")
-            for idx, c in enumerate(cards):
-                if idx in self.processed_indices:
-                    continue
+        # Search with automatic scrolling up to 8 cycles
+        for scroll_cycle in range(8):
+            # Check for direct Apply buttons
+            apply_buttons = await self.page.query_selector_all("button:has-text('Apply'), a:has-text('Apply')")
+            for btn in apply_buttons:
                 try:
-                    if await c.is_visible():
-                        target_card = c
-                        self.processed_indices.add(idx)
-                        await c.click()
-                        await asyncio.sleep(2)
-                        # Re-scan for apply button inside opened detail view
-                        inner_btn = await self.page.query_selector("button:has-text('Apply')")
-                        if inner_btn and await inner_btn.is_visible():
-                            target_btn = inner_btn
-                            break
+                    if not await btn.is_visible():
+                        continue
+                    txt = (await btn.text_content()).strip().lower()
+                    if "applied" in txt or "save" in txt or "share" in txt or "filter" in txt:
+                        continue
+
+                    # Extract card text to identify company
+                    parent_text = ""
+                    try:
+                        parent_text = await btn.evaluate("""el => {
+                            const card = el.closest('div[class*="component"], div[class*="jobCard"], div[class*="styles_result"], li') || el.parentElement;
+                            return card ? card.innerText : '';
+                        }""")
+                    except Exception:
+                        pass
+
+                    first_lines = [l.strip() for l in parent_text.split('\\n') if l.strip()]
+                    detected_company = first_lines[0][:40] if first_lines else ""
+
+                    if detected_company and detected_company in self.processed_companies:
+                        continue
+
+                    # Found an unapplied button!
+                    target_btn = btn
+                    if detected_company:
+                        company_name = detected_company
+                        if len(first_lines) >= 2:
+                            role_title = first_lines[1][:50]
+                    break
                 except Exception:
                     continue
 
+            if target_btn:
+                break
+
+            # If no direct button found, search for job card containers to open detail drawer
+            cards = await self.page.query_selector_all("div[class*='jobCard'], div[class*='styles_component'], div[data-test*='StartupResult']")
+            for c in cards:
+                try:
+                    if not await c.is_visible():
+                        continue
+                    c_text = await c.evaluate("el => el.innerText || ''")
+                    c_lines = [l.strip() for l in c_text.split('\\n') if l.strip()]
+                    c_name = c_lines[0][:40] if c_lines else ""
+
+                    if c_name and c_name in self.processed_companies:
+                        continue
+                    if "applied" in c_text.lower():
+                        continue
+
+                    target_card = c
+                    if c_name:
+                        company_name = c_name
+                    if len(c_lines) >= 2:
+                        role_title = c_lines[1][:50]
+
+                    await c.click()
+                    await asyncio.sleep(2)
+
+                    inner_btn = await self.page.query_selector("button:has-text('Apply')")
+                    if inner_btn and await inner_btn.is_visible():
+                        target_btn = inner_btn
+                        break
+                except Exception:
+                    continue
+
+            if target_btn:
+                break
+
+            # Scroll down to load more cards dynamically
+            await self.log(f"Auto-scrolling down to load more job listings (attempt {scroll_cycle + 1}/8)...", "info")
+            try:
+                await self.page.evaluate("window.scrollBy(0, 700);")
+                await asyncio.sleep(1.8)
+            except Exception:
+                pass
+
         if not target_btn:
-            await self.log("No more unapplied job listings visible on page. Please scroll down or change search filter.", "warning")
+            await self.log("No more unapplied job listings visible on page. Please change search filter or adjust location.", "warning")
             await self.broadcast_event({"type": "wellfound_waiting_scroll"})
             return {"success": False, "message": "No unapplied jobs found on current view."}
-
-        # Attempt to read company and role from DOM container or nearby text
-        try:
-            card_elem = target_card or (await target_btn.evaluate_handle("el => el.closest('div[class*=\"component\"], div[class*=\"jobCard\"], div[class*=\"header\"]')"))
-            if card_elem:
-                text_content = await card_elem.evaluate("el => el.innerText || ''")
-                lines = [l.strip() for l in text_content.split("\n") if l.strip()]
-                if len(lines) >= 2:
-                    company_name = lines[0][:40]
-                    role_title = lines[1][:50]
-        except Exception:
-            pass
 
         btn_txt = (await target_btn.text_content()).strip()
         await self.log(f"👉 Opening application for: {company_name} — '{role_title}' (Button: '{btn_txt}')...", "action")
@@ -412,19 +479,33 @@ class BrowserEngine:
         except Exception:
             pass
 
-        # Prepare Tailored Pitch for Hiring Manager
+        if company_name:
+            self.processed_companies.add(company_name)
+
+        # Prepare Tailored Pitch for Hiring Manager using REAL Profile Details
+        self.profile = self.load_profile()
         personal = self.profile.get("personal", {})
-        screening = self.profile.get("screening_answers", {})
-        
+        full_name = personal.get("full_name", "Nachiket Rana")
+        city = personal.get("city", "Ahmedabad")
+        github_url = personal.get("github", "https://github.com/nachiketrana")
+        linkedin_url = personal.get("linkedin", "https://www.linkedin.com/in/nachiket-rana-6079662a4/")
+        portfolio_url = (personal.get("portfolio") or "").strip()
+
+        links = [f"GitHub: {github_url}", f"LinkedIn: {linkedin_url}"]
+        if portfolio_url and "example" not in portfolio_url:
+            links.insert(0, f"Portfolio: {portfolio_url}")
+        links_str = " | ".join(links)
+
         tailored_note = (
             f"Hi {company_name} Team,\n\n"
             f"I am writing to express my strong interest in the {role_title} role. With 2+ years of full-stack engineering "
             f"experience in React, Node.js, and PostgreSQL, I previously improved backend API throughput by 30% and built "
-            f"interactive financial charting dashboards.\n\n"
-            f"I take complete end-to-end ownership of product features, write clean scalable code, and thrive in fast-moving teams.\n"
-            f"Portfolio: {personal.get('portfolio', 'https://nachiketrana.dev')} | GitHub: {personal.get('github', 'https://github.com/nachiketrana')}\n\n"
+            f"high-performance web applications.\n\n"
+            f"I take full end-to-end ownership of product features, write clean and scalable code, and thrive in fast-paced startup teams. "
+            f"Based in {city}, India, I am available to join immediately.\n\n"
+            f"{links_str}\n\n"
             f"I would love the opportunity to contribute to your mission!\n\n"
-            f"Best regards,\n{personal.get('full_name', 'Nachiket Rana')}"
+            f"Best regards,\n{full_name}"
         )
 
         # Auto-fill the Note textarea in the open modal
@@ -459,7 +540,7 @@ class BrowserEngine:
         }
         await self.broadcast_event(review_data)
 
-        await self.log(f"🔔 [ACTION REQUIRED] Review Application #{self.queue_current + 1}/{self.queue_total}: {company_name} ({role_title})", "action")
+        await self.log(f"🔔 [ACTION REQUIRED] Review Application #{queue_label}: {company_name} ({role_title})", "action")
         await self.log("👉 Form & Pitch are prepared. Check browser and click 'Yes, Submit' on dashboard to confirm!", "action")
 
         return {"success": True, "review_ready": True, "company": company_name, "role": role_title}
@@ -467,7 +548,7 @@ class BrowserEngine:
     async def confirm_current_submission(self):
         """
         Called when the user clicks 'Yes, Submit' on the dashboard.
-        Clicks the submission button, logs to CSV, and advances to the next company.
+        Clicks the submission button, logs to CSV, closes the modal, and advances continuously to the next company.
         """
         if not self.page or self.page.is_closed():
             return {"success": False, "message": "Browser is not open."}
@@ -516,21 +597,42 @@ class BrowserEngine:
         stats = self.tracker.get_stats()
         await self.broadcast_event({"type": "stats", **stats})
 
-        # Pacing delay (natural 3 seconds so platform sees human interaction)
-        await self.log(f"⏳ Waiting 3 seconds before opening next company in queue ({self.queue_current}/{self.queue_total})...", "info")
-        await asyncio.sleep(3)
+        # Wait for submission network request to finalize
+        await asyncio.sleep(2)
 
-        # Proceed to next company in queue
+        # CRITICAL: Close the modal so the screen is completely clear for the next job!
+        await self._close_any_active_modal()
+        await asyncio.sleep(1)
+
+        # Scroll down slightly so the applied card moves up and the next fresh cards come into view
+        try:
+            await self.page.evaluate("window.scrollBy(0, 450);")
+            await asyncio.sleep(1)
+        except Exception:
+            pass
+
+        # Pacing delay (natural 2.5 seconds so platform sees human interaction)
+        queue_label = f"{self.queue_current}/{self.queue_total}" if self.queue_total < 900 else f"#{self.queue_current}"
+        await self.log(f"⏳ Advancing continuously to next company ({queue_label})...", "info")
+        await asyncio.sleep(2.5)
+
+        # Proceed continuously to next company in queue
         return await self._prepare_next_wellfound_job()
 
     async def skip_current_submission(self):
         """Skips the current application, closes modal, and proceeds to next company."""
         await self.log(f"⏭️ Skipping application for {self.pending_company}. Proceeding to next...", "warning")
+        if self.pending_company:
+            self.processed_companies.add(self.pending_company)
+
+        # Close the open application modal
+        await self._close_any_active_modal()
+        await asyncio.sleep(1)
+
+        # Scroll down slightly
         try:
-            # Press Escape to close modal
-            if self.page:
-                await self.page.keyboard.press("Escape")
-                await asyncio.sleep(1)
+            await self.page.evaluate("window.scrollBy(0, 400);")
+            await asyncio.sleep(1)
         except Exception:
             pass
 
@@ -539,6 +641,7 @@ class BrowserEngine:
     async def stop_batch_queue(self):
         """Cancels the current batch queue."""
         self.queue_active = False
+        await self._close_any_active_modal()
         await self.log("🛑 Wellfound Batch Queue stopped by user.", "info")
         await self.broadcast_event({"type": "wellfound_stopped"})
         return {"success": True}

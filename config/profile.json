@@ -3,17 +3,17 @@
     "full_name": "Nachiket Rana",
     "first_name": "Nachiket",
     "last_name": "Rana",
-    "email": "nachiket.rana@example.com",
-    "phone": "+91 9876543210",
+    "email": "nachiketrana0707@gmail.com",
+    "phone": "+91 8799318204",
     "location": "India",
-    "city": "Mumbai",
-    "state": "Maharashtra",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
     "country": "India",
-    "postal_code": "400001",
-    "linkedin": "https://linkedin.com/in/nachiket-rana",
+    "postal_code": "380001",
+    "linkedin": "https://www.linkedin.com/in/nachiket-rana-6079662a4/",
     "github": "https://github.com/nachiketrana",
-    "portfolio": "https://nachiketrana.dev",
-    "website": "https://nachiketrana.dev"
+    "portfolio": "",
+    "website": ""
   },
   "work_authorization": {
     "legally_authorized_to_work": "Yes",
@@ -74,14 +74,14 @@
     "salary_expectation": "₹3L - ₹5L PA"
   },
   "screening_answers": {
-    "elevator_pitch": "Full-Stack Developer with 2+ years of experience in React, Node.js, and PostgreSQL. Improved backend API throughput by 30% and built high-performance financial dashboards. Portfolio: https://nachiketrana.dev",
+    "elevator_pitch": "Full-Stack Developer with 2+ years of experience in React, Node.js, and PostgreSQL. Improved backend API throughput by 30% and built high-performance financial dashboards. GitHub: https://github.com/nachiketrana",
     "why_company": "I am excited by your engineering culture and product impact. My experience in scalable full-stack development, API optimization, and clean architecture directly aligns with your team's goals.",
     "key_achievement": "Architected an interactive financial charting dashboard and optimized backend PostgreSQL queries, reducing latency by 30% and improving overall application throughput.",
     "greatest_strength": "End-to-end feature ownership, fast debugging, and building clean, modular full-stack architectures that scale."
   },
   "form_defaults": {
     "how_did_you_hear": "LinkedIn",
-    "gender": "Decline to state",
+    "gender": "Male",
     "race_ethnicity": "Decline to state",
     "veteran_status": "No",
     "disability_status": "No"
